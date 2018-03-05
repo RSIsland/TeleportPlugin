@@ -1,0 +1,8 @@
+main: ${groupId}.${artifactId}
+name: ${artifactId}
+version: ${version}
+
+author: Ecconia
+
+commands:
+  tp:
