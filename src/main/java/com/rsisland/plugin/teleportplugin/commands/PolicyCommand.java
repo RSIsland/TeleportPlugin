@@ -33,7 +33,7 @@ public class PolicyCommand extends Subcommand
 		if(arguments.length != 1)
 		{
 			f.e(sender, "Usage: ", path+" <policy>");
-			f.n(sender, "%v (%v) - Default policy of this server.", "Default", "Accept");
+			f.n(sender, "%v (%v) - Default policy of this server.", "Reset", "Accept");
 			f.n(sender, "%v - Allow anyone to tp to you.", "Accept");
 			f.n(sender, "%v - Deny anyone to tp to you.", "Deny");
 			return;
@@ -42,7 +42,7 @@ public class PolicyCommand extends Subcommand
 		String policyText = arguments[0].toLowerCase();
 		Policy policy;
 		
-		if(policyText.equals("default"))
+		if(policyText.equals("reset"))
 		{
 			policy = null;
 		}
@@ -57,7 +57,6 @@ public class PolicyCommand extends Subcommand
 		}
 		
 		plugin.getTPPlayer(player).setTpReceivePolicy(policy);
-		
 		f.n(sender, "Changed policy to %v.", policyText);
 	}
 	
@@ -66,7 +65,7 @@ public class PolicyCommand extends Subcommand
 	{
 		if(args.length == 1)
 		{
-			return Arrays.stream(new String[] {"accept", "deny", "default"}).filter(e -> StringUtils.startsWithIgnoreCase(e, args[0])).collect(Collectors.toList());
+			return Arrays.stream(new String[] {"accept", "deny", "reset"}).filter(e -> StringUtils.startsWithIgnoreCase(e, args[0])).collect(Collectors.toList());
 		}
 		
 		return Collections.emptyList();
