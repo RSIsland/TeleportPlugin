@@ -1,0 +1,2 @@
+database:
+  url: jdbc:mysql://localhost/{Database}?user={username}&password={password}&useSSL=false
