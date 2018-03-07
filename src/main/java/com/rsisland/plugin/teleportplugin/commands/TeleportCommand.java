@@ -27,6 +27,8 @@ public class TeleportCommand extends GroupSubcommand
 	@Override
 	protected void exec(CommandSender sender) //No arguments
 	{
+		checkType(sender);
+		
 		//Print usage
 		if(hasPermission(sender))
 		{
@@ -41,9 +43,9 @@ public class TeleportCommand extends GroupSubcommand
 	@Override
 	protected void noMatch(CommandSender sender, String[] arguments) //Arguments are not a subcommand
 	{
-		checkPermission(sender);
-		
 		Player player = getPlayer(sender);
+		
+		checkPermission(sender);
 		
 		//Handle players or similar.
 		if(arguments.length != 1)
@@ -64,7 +66,7 @@ public class TeleportCommand extends GroupSubcommand
 		
 		if(target == player)
 		{
-			f.e(sender, "Try somebody else besides you.");
+			f.e(sender, "Try somebody else besides yourself.");
 			return;
 		}
 		
