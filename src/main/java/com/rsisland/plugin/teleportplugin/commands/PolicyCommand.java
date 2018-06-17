@@ -51,8 +51,7 @@ public class PolicyCommand extends Subcommand
 			policy = Policy.fromString(policyText);
 			if(policy == null)
 			{
-				f.e(sender, "Could not parse %v to policy, try tabcomplete or %v to get a list of policies.", policyText, path);
-				return;
+				die("Could not parse %v to policy, try tabcomplete or %v to get a list of policies.", policyText, path);
 			}
 		}
 		

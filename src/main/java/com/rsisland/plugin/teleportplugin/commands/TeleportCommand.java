@@ -32,11 +32,11 @@ public class TeleportCommand extends GroupSubcommand
 		//Print usage
 		if(hasPermission(sender))
 		{
-			f.e(sender, "Usage: %v and %v", path+" <player>", path+" policy");
+			die("Usage: %v and %v", path+" <player>", path+" policy");
 		}
 		else
 		{
-			f.e(sender, "Usage: %v", path+" policy");
+			die("Usage: %v", path+" policy");
 		}
 	}
 	
@@ -60,28 +60,26 @@ public class TeleportCommand extends GroupSubcommand
 		
 		if(target == null)
 		{
-			f.e(sender, "Player %v does not seem to be online.", playerName);
-			return;
+			die("Player %v does not seem to be online.", playerName);
 		}
 		
 		if(target == player)
 		{
-			f.e(sender, "Try somebody else besides yourself.");
-			return;
+			die("Try somebody else besides yourself.");
 		}
 		
 		Policy policy = plugin.getTPPlayer(target).getTpReceivePolicy();
 		
 		if(policy == Policy.DENY)
 		{
-			f.e(sender, "Player %v does not allow teleportations.", target.getName());
 			f.n(target, "Player %v attempted to tp to you.", sender.getName());
+			die("Player %v does not allow teleportations.", target.getName());
 		}
 		else if(policy == Policy.ACCEPT)
 		{
 			player.teleport(target);
-			f.n(sender, "You teleported to %v", target.getName());
 			f.n(target, "%v teleported to you.", player.getName());
+			f.n(sender, "You teleported to %v", target.getName());
 		}
 	}
 	
