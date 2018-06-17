@@ -20,7 +20,7 @@ public class TeleportPlugin extends JavaPlugin implements Listener
 {
 	private Map<Player, TPPlayer> tpPlayers;
 	private DBAdapter dba;
-	private Feedback f;
+	private FormattedLogger logger;
 	
 	@Override
 	public void onEnable()
@@ -29,39 +29,17 @@ public class TeleportPlugin extends JavaPlugin implements Listener
 		
 		tpPlayers = new HashMap<>();
 
-		f = new Feedback(Feedback.simplePrefix(ChatColor.WHITE, ChatColor.GOLD, "TP"));
+		Feedback f = new Feedback(Feedback.simplePrefix(ChatColor.WHITE, ChatColor.GOLD, "TP"));
+		logger = new FormattedLogger(f, getServer().getConsoleSender());
 		
+		String url = getConfig().getString("database.url");
 		try
 		{
-			String url = getConfig().getString("database.url");
-			dba = new DBAdapter(url, new FormattedLogger(f, getServer().getConsoleSender()));
-			try
-			{
-				dba.createTables();
-			}
-			catch(SQLException e)
-			{
-				e.printStackTrace();
-				f.e(getServer().getConsoleSender(), "Error creating required tables, disabling DB support.");
-				try
-				{
-					dba.close();
-				}
-				catch(SQLException e1)
-				{
-					f.e(getServer().getConsoleSender(), "Error while closing DB connection.");
-					e1.printStackTrace();
-				}
-				dba = null;
-			}
+			dba = new DBAdapter(url, logger);
 		}
-		catch(ClassNotFoundException e)
+		catch (SQLException e)
 		{
-			f.e(getServer().getConsoleSender(), "Could not find driver for database - nag Plugin author - he did not add it, disabling DB support.");
-		}
-		catch(SQLException e)
-		{
-			f.e(getServer().getConsoleSender(), "Error connecting to DB, see stacktrace, disabling DB support.");
+			logger.error("Could not init the database connection. DB not supported.");
 			e.printStackTrace();
 		}
 		

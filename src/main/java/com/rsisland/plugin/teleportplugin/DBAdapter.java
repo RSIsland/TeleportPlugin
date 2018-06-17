@@ -1,90 +1,86 @@
 package com.rsisland.plugin.teleportplugin;
 
-import java.sql.Connection;
-import java.sql.DriverManager;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
 import java.util.UUID;
 
-public class DBAdapter
+public class DBAdapter extends GenericDBAdapter
 {
-	private final FormattedLogger logger;
-	
-	private final Connection connection;
+	private final static String table_players = "teleport_players";
+	private final static String table_policy = "teleport_player_policy";
 
-	private final String playersTable = "teleport_players";
-	private final String policyTable = "teleport_player_policy";
+	private PreparedStatement stmtCreateUser;
+	private PreparedStatement stmtDeletePolicy;
+	private PreparedStatement stmtUpdatePolicy;
+	private PreparedStatement stmtGetPolicy;
 
-	private final PreparedStatement stmtCreateUser;
-	private final PreparedStatement stmtDeletePolicy;
-	private final PreparedStatement stmtUpdatePolicy;
-	private final PreparedStatement stmtGetPolicy;
-
-	public DBAdapter(String jdbcURL, FormattedLogger logger) throws ClassNotFoundException, SQLException
+	public DBAdapter(String jdbcURL, FormattedLogger logger) throws SQLException
 	{
-		this.logger = logger;
-		
-		Class.forName("com.mysql.jdbc.Driver");
-		connection = DriverManager.getConnection(jdbcURL);
-		
+		super(jdbcURL, logger);
+	}
+	
+	@Override
+	protected void setupConnection() throws SQLException
+	{
 		stmtCreateUser = connection.prepareStatement(
-				"INSERT IGNORE INTO " + playersTable + " (uuid_l, uuid_m)"
-				+ " VALUES (?, ?);");
+				"INSERT IGNORE INTO " + table_players + " (uuid_l, uuid_m)"
+						+ " VALUES (?, ?);");
 		
 		stmtDeletePolicy = connection.prepareStatement(
-				  "DELETE " + policyTable + ""
-				+ " FROM " + policyTable + ""
-				+ " INNER JOIN " + playersTable + " ON " + playersTable + ".id = " + policyTable + ".player"
-				+ " WHERE " + playersTable + ".uuid_l = ? AND " + playersTable + ".uuid_m = ?;");
+				"DELETE " + table_policy + ""
+						+ " FROM " + table_policy + ""
+						+ " INNER JOIN " + table_players + " ON " + table_players + ".id = " + table_policy + ".player"
+						+ " WHERE " + table_players + ".uuid_l = ? AND " + table_players + ".uuid_m = ?;");
 		
 		stmtUpdatePolicy = connection.prepareStatement(
-				  "INSERT INTO " + policyTable + " (player, policy)"
-				+ " SELECT " + playersTable + ".id, ?"
-				+ " FROM " + playersTable + ""
-				+ " WHERE " + playersTable + ".uuid_l = ? AND " + playersTable + ".uuid_m = ?"
-				+ " ON DUPLICATE KEY UPDATE " + policyTable + ".policy = ?;");
+				"INSERT INTO " + table_policy + " (player, policy)"
+						+ " SELECT " + table_players + ".id, ?"
+						+ " FROM " + table_players + ""
+						+ " WHERE " + table_players + ".uuid_l = ? AND " + table_players + ".uuid_m = ?"
+						+ " ON DUPLICATE KEY UPDATE " + table_policy + ".policy = ?;");
 		
 		stmtGetPolicy = connection.prepareStatement(
-				  "SELECT " + policyTable + ".policy"
-				+ " FROM " + policyTable + ""
-				+ " INNER JOIN " + playersTable + " ON " + playersTable + ".id = " + policyTable + ".player"
-				+ " WHERE " + playersTable + ".uuid_l = ? AND " + playersTable + ".uuid_m = ?;");
+				"SELECT " + table_policy + ".policy"
+						+ " FROM " + table_policy + ""
+						+ " INNER JOIN " + table_players + " ON " + table_players + ".id = " + table_policy + ".player"
+						+ " WHERE " + table_players + ".uuid_l = ? AND " + table_players + ".uuid_m = ?;");
 	}
 
-	public void createTables() throws SQLException
+	@Override
+	protected void createTables() throws SQLException
 	{
 		try(Statement stmt = connection.createStatement())
 		{
 			stmt.executeUpdate(
-					  "CREATE TABLE IF NOT EXISTS " + playersTable + " ("
-					+ " id INT PRIMARY KEY NOT NULL AUTO_INCREMENT,"
-					+ " uuid_l BIGINT NOT NULL,"
-					+ " uuid_m BIGINT NOT NULL);");
+				  "CREATE TABLE IF NOT EXISTS " + table_players + " ("
+				+ " id INT PRIMARY KEY NOT NULL AUTO_INCREMENT,"
+				+ " uuid_l BIGINT NOT NULL,"
+				+ " uuid_m BIGINT NOT NULL);");
 			try
 			{
 				stmt.executeUpdate(
-					  "CREATE UNIQUE INDEX " + playersTable + "_uuid_uindex"
-					+ " ON " + playersTable + " (uuid_l, uuid_m);");
+					  "CREATE UNIQUE INDEX " + table_players + "_uuid_uindex"
+					+ " ON " + table_players + " (uuid_l, uuid_m);");
 			}
 			catch(SQLException e)
 			{
 				//Oops key seems to be present already.
 			}
 			stmt.executeUpdate(
-				"CREATE TABLE IF NOT EXISTS " + policyTable + " ("
+				"CREATE TABLE IF NOT EXISTS " + table_policy + " ("
 				+ " id INT PRIMARY KEY NOT NULL AUTO_INCREMENT,"
 				+ " player INT NOT NULL,"
 				+ " policy INT NOT NULL,"
-				+ " CONSTRAINT " + policyTable + "_player_fk FOREIGN KEY (player)"
-				+ " REFERENCES " + playersTable + " (id)"
+				+ " CONSTRAINT " + table_policy + "_player_fk FOREIGN KEY (player)"
+				+ " REFERENCES " + table_players + " (id)"
 				+ " ON DELETE CASCADE ON UPDATE CASCADE);");
 			try
 			{
 				stmt.executeUpdate(
-					  "CREATE UNIQUE INDEX " + policyTable + "_player_uindex"
-					+ " ON " + policyTable + " (player);");
+					  "CREATE UNIQUE INDEX " + table_policy + "_player_uindex"
+					+ " ON " + table_policy + " (player);");
 			}
 			catch(SQLException e)
 			{
@@ -93,19 +89,29 @@ public class DBAdapter
 		}
 	}
 
-	public void close() throws SQLException
+	public void close()
 	{
-		stmtCreateUser.close();
-		stmtDeletePolicy.close();
-		stmtUpdatePolicy.close();
-		stmtGetPolicy.close();
-		connection.close();
+		try
+		{
+			stmtCreateUser.close();
+			stmtDeletePolicy.close();
+			stmtUpdatePolicy.close();
+			stmtGetPolicy.close();
+			
+			connection.close();
+		}
+		catch (SQLException e)
+		{
+			//Well oops.
+		}
 	}
 
 	public void savePolicy(UUID uuid, Policy policy)
 	{
 		try
 		{
+			valid();
+			
 			//Add a user (If not already done):
 			stmtCreateUser.setLong(1, uuid.getLeastSignificantBits());
 			stmtCreateUser.setLong(2, uuid.getMostSignificantBits());
@@ -129,7 +135,7 @@ public class DBAdapter
 		}
 		catch(SQLException e)
 		{
-			logger.error("Could not save data for %v. Check stacktrace.", uuid);
+			logger.error("Could not save data for %v.", uuid);
 			e.printStackTrace();
 		}
 	}
@@ -138,6 +144,8 @@ public class DBAdapter
 	{
 		try
 		{
+			valid();
+			
 			stmtGetPolicy.setLong(1, uuid.getLeastSignificantBits());
 			stmtGetPolicy.setLong(2, uuid.getMostSignificantBits());
 			ResultSet rs = stmtGetPolicy.executeQuery();
@@ -149,9 +157,10 @@ public class DBAdapter
 		}
 		catch(SQLException e)
 		{
-			logger.error("Could not load data for %v. Check stacktrace.", uuid);
+			logger.error("Could not load data for %v.", uuid);
 			e.printStackTrace();
 		}
+		
 		return null;
 	}
 }
