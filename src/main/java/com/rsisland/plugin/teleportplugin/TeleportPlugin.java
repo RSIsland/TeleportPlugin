@@ -44,6 +44,8 @@ public class TeleportPlugin extends JavaPlugin implements Listener
 			e.printStackTrace();
 		}
 		
+		getServer().getPluginManager().registerEvents(this, this);
+		
 		new CommandHandler(this, f
 			,new TeleportCommand(this
 				,new PolicyCommand(this)
@@ -60,7 +62,6 @@ public class TeleportPlugin extends JavaPlugin implements Listener
 	public void onPlayerLeave(PlayerQuitEvent event)
 	{
 		tpPlayers.remove(event.getPlayer());
-		//Dump requests
 	}
 	
 	public TPPlayer getTPPlayer(Player player)
