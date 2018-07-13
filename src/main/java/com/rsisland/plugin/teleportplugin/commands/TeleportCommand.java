@@ -11,6 +11,7 @@ import com.ecconia.rsisland.framework.cofami.GroupSubcommand;
 import com.ecconia.rsisland.framework.cofami.Subcommand;
 import com.rsisland.plugin.teleportplugin.Policy;
 import com.rsisland.plugin.teleportplugin.TeleportPlugin;
+import com.rsisland.plugin.teleportplugin.Utils;
 
 public class TeleportCommand extends GroupSubcommand
 {
@@ -55,8 +56,7 @@ public class TeleportCommand extends GroupSubcommand
 		}
 		
 		String playerName = arguments[0];
-		@SuppressWarnings("deprecation")
-		Player target = sender.getServer().getPlayerExact(playerName);
+		Player target = Utils.getPlayer(sender.getServer().getOnlinePlayers(), playerName);
 		
 		if(target == null)
 		{
