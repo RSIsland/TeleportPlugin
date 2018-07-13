@@ -1,8 +1,10 @@
-package com.rsisland.plugin.teleportplugin;
+package com.rsisland.plugin.teleportplugin.db;
 
 import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.SQLException;
+
+import com.rsisland.plugin.teleportplugin.FormattedLogger;
 
 public abstract class GenericDBAdapter
 {

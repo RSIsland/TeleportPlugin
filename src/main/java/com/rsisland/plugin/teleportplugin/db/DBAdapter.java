@@ -1,10 +1,13 @@
-package com.rsisland.plugin.teleportplugin;
+package com.rsisland.plugin.teleportplugin.db;
 
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
 import java.util.UUID;
+
+import com.rsisland.plugin.teleportplugin.FormattedLogger;
+import com.rsisland.plugin.teleportplugin.Policy;
 
 public class DBAdapter extends GenericDBAdapter
 {

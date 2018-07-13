@@ -15,6 +15,7 @@ import com.ecconia.rsisland.framework.cofami.CommandHandler;
 import com.ecconia.rsisland.framework.cofami.Feedback;
 import com.rsisland.plugin.teleportplugin.commands.PolicyCommand;
 import com.rsisland.plugin.teleportplugin.commands.TeleportCommand;
+import com.rsisland.plugin.teleportplugin.db.DBAdapter;
 
 public class TeleportPlugin extends JavaPlugin implements Listener
 {
@@ -28,7 +29,7 @@ public class TeleportPlugin extends JavaPlugin implements Listener
 		saveDefaultConfig();
 		
 		tpPlayers = new HashMap<>();
-
+		
 		Feedback f = new Feedback(Feedback.simplePrefix(ChatColor.WHITE, ChatColor.GOLD, "TP"));
 		logger = new FormattedLogger(f, getServer().getConsoleSender());
 		
