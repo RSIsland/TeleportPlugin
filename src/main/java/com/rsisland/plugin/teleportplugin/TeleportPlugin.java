@@ -31,6 +31,10 @@ public class TeleportPlugin extends JavaPlugin implements Listener
 	//API:
 	private List<PlayerFilter> playerFilters = new ArrayList<>();
 	private Map<World, Cuboid> worldBoundaries = new HashMap<>();
+	
+	//Other:
+	private Utils utils;
+	
 	@Override
 	public void onEnable()
 	{
@@ -59,6 +63,8 @@ public class TeleportPlugin extends JavaPlugin implements Listener
 				,new PolicyCommand(this)
 			)
 		);
+		
+		utils = new Utils(this);
 	}
 	
 	public DBAdapter getDBA()
@@ -81,6 +87,11 @@ public class TeleportPlugin extends JavaPlugin implements Listener
 			tpPlayers.put(player, tpPlayer);
 		}
 		return tpPlayer;
+	}
+	
+	public Utils getUtils()
+	{
+		return utils;
 	}
 	
 	// API Data Provider methods ##############################################
