@@ -29,6 +29,12 @@
 			<artifactId>Cofami</artifactId>
 			<version>1.4</version>
 		</dependency>
+		<dependency>
+			<groupId>com.ecconia.rsisland.framework.commonelements</groupId>
+			<artifactId>CommonElements</artifactId>
+			<version>2</version>
+			<scope>compile</scope>
+		</dependency>
 	</dependencies>
 
 	<build>
