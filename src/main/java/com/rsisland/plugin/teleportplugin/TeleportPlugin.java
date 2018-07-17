@@ -1,10 +1,13 @@
 package com.rsisland.plugin.teleportplugin;
 
 import java.sql.SQLException;
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 import org.bukkit.ChatColor;
+import org.bukkit.World;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
@@ -13,6 +16,8 @@ import org.bukkit.plugin.java.JavaPlugin;
 
 import com.ecconia.rsisland.framework.cofami.CommandHandler;
 import com.ecconia.rsisland.framework.cofami.Feedback;
+import com.ecconia.rsisland.framework.commonelements.Cuboid;
+import com.rsisland.plugin.teleportplugin.api.PlayerFilter;
 import com.rsisland.plugin.teleportplugin.commands.PolicyCommand;
 import com.rsisland.plugin.teleportplugin.commands.TeleportCommand;
 import com.rsisland.plugin.teleportplugin.db.DBAdapter;
@@ -23,6 +28,9 @@ public class TeleportPlugin extends JavaPlugin implements Listener
 	private DBAdapter dba;
 	private FormattedLogger logger;
 	
+	//API:
+	private List<PlayerFilter> playerFilters = new ArrayList<>();
+	private Map<World, Cuboid> worldBoundaries = new HashMap<>();
 	@Override
 	public void onEnable()
 	{
@@ -73,5 +81,27 @@ public class TeleportPlugin extends JavaPlugin implements Listener
 			tpPlayers.put(player, tpPlayer);
 		}
 		return tpPlayer;
+	}
+	
+	// API Data Provider methods ##############################################
+	
+	public void setWorldBounds(World world, Cuboid bounds)
+	{
+		worldBoundaries.put(world, bounds);
+	}
+	
+	public void addPlayerFilter(PlayerFilter playerFilter)
+	{
+		playerFilters.add(playerFilter);
+	}
+	
+	public Cuboid getWorldBoundaries(World world)
+	{
+		return worldBoundaries.get(world);
+	}
+
+	public List<PlayerFilter> getPlayerFilters()
+	{
+		return playerFilters;
 	}
 }
