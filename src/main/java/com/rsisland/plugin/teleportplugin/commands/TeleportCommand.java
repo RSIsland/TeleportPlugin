@@ -17,18 +17,21 @@ public class TeleportCommand extends GroupSubcommand
 {
 	private final TeleportPlugin plugin;
 	
+	private String[] permissions;
+	private String PERM_TP = "tp";
+	private String PERM_TP_POS = "tppos";
+	private String PERM_TP_OTHER = "othertp";
+	private String PERM_TP_OTHER_POS = "othertppos";
+	
 	public TeleportCommand(TeleportPlugin plugin, Subcommand... subcommands)
 	{
 		super("tp", subcommands);
-		onlyPlayer();
-		
 		this.plugin = plugin;
 	}
 	
 	@Override
 	protected void exec(CommandSender sender) //No arguments
 	{
-		checkType(sender);
 		
 		//Print usage
 		if(hasPermission(sender))
@@ -84,13 +87,6 @@ public class TeleportCommand extends GroupSubcommand
 	}
 	
 	@Override
-	protected boolean hasCallRequirements()
-	{
-		//TODO: investigate if permission required.
-		return true;
-	}
-	
-	@Override
 	public List<String> onTabComplete(CommandSender sender, String[] arguments)
 	{
 		List<String> suggestions = super.onTabComplete(sender, arguments);
@@ -107,5 +103,47 @@ public class TeleportCommand extends GroupSubcommand
 		}
 		
 		return suggestions;
+	}
+	
+	// PERMISSIONS ############################################################
+	
+	//Overwritten to check multiple permissions instead of one
+	@Override
+	protected boolean hasPermission(CommandSender sender)
+	{
+		for(String permission : permissions)
+		{
+			if(sender.hasPermission(permission))
+			{
+				return true;
+			}
+		}
+		
+		return super.hasPermission(sender);
+	}
+	
+	//Overwritten to set the permissions for the Bukkit call command permissions
+	@Override
+	public String getPermissions()
+	{
+		String permissions = super.getPermissions();
+		String fill = permissions.isEmpty() ? "" : ".";
+		
+		return permissions  + fill + String.join(";", permissions);
+	}
+	
+	@Override
+	protected void init(Feedback f, String path, String permission)
+	{
+		String fill = permission.isEmpty() ? "" : ".";  
+		
+		PERM_TP = permission + fill + PERM_TP;
+		PERM_TP_POS = permission + fill + PERM_TP_POS;
+		PERM_TP_OTHER = permission + fill + PERM_TP_OTHER;
+		PERM_TP_OTHER_POS = permission + fill + PERM_TP_OTHER_POS;
+		
+		permissions = new String[] { PERM_TP, PERM_TP_POS, PERM_TP_OTHER, PERM_TP_OTHER_POS };
+		
+		super.init(f, path, permission);
 	}
 }
