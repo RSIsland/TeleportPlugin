@@ -32,9 +32,29 @@ public class Utils
 		}
 	}
 	
+	public List<String> getPlayerNames(CommandSender completer, String input, boolean self)
+	{
+		return plugin.getServer().getOnlinePlayers().stream()
+				 .filter(player -> self || player != completer)
+				 .filter(player -> {
+					 for(PlayerFilter filter : plugin.getPlayerFilters())
+					 {
+						 if(filter.test(completer, player))
+						 {
+							 return false;
+						 }
+					 }
+					 return true;
+				 })
+				 .filter(player -> player.getName().equalsIgnoreCase(input))
+				 .map(Player::getName)
+				 .collect(Collectors.toList());
+	}
+	
 	public List<Player> getPlayers(CommandSender completer, String input)
 	{
 		return plugin.getServer().getOnlinePlayers().stream()
+					 .filter(player -> player != completer)
 					 .filter(player -> {
 						 for(PlayerFilter filter : plugin.getPlayerFilters())
 						 {

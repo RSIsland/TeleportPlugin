@@ -2,7 +2,6 @@ package com.rsisland.plugin.teleportplugin.commands;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.stream.Collectors;
 
 import org.apache.commons.lang.StringUtils;
 import org.bukkit.Location;
@@ -174,9 +173,16 @@ public class TeleportCommand extends GroupSubcommand
 			
 			if(player.teleport(target, TeleportCause.COMMAND))
 			{
-				f.n(sender, "Successfully teleported %v.", player.getName());
-				//TODO: By?
-				f.n(player, "You have been teleported.");
+				if(sender != player)
+				{
+					f.n(sender, "Successfully teleported %v.", player.getName());
+					//TODO: By?
+					f.n(player, "You have been teleported.");
+				}
+				else
+				{
+					f.n(sender, "Successfully teleported.");
+				}
 			}
 			else
 			{
@@ -223,22 +229,28 @@ public class TeleportCommand extends GroupSubcommand
 	}
 	
 	@Override
-	public List<String> onTabComplete(CommandSender sender, String[] arguments)
+	protected List<String> onTabCompleteNoMatch(CommandSender sender, String[] arguments)
 	{
-		List<String> suggestions = super.onTabComplete(sender, arguments);
+		//This methods gets called when no subcommand matches.
 		
-		if(arguments.length == 1 && hasPermission(sender))
+		//This contains all subcommand starting with the first argument, but only when there only is one argument.
+		List<String> completions = super.onTabCompleteNoMatch(sender, arguments);
+		
+		//Only add player completions when its the first or second argument for:
+		//tp <player>
+		//tp <player> <player>
+		if(
+			(arguments.length == 1 && (sender.hasPermission(PERM_TP_OTHER_POS)
+									  || sender.hasPermission(PERM_TP_OTHER) 
+									  || ((sender instanceof Player)
+										 && (sender.hasPermission(PERM_TP)
+										    || sender.hasPermission(PERM_TP_POS)))))
+		 || (arguments.length == 2 && sender.hasPermission(PERM_TP_OTHER)))
 		{
-			//TODO filter hidden players...
-			suggestions.addAll(
-					sender.getServer().getOnlinePlayers().stream()
-						.map(Player::getName)
-						.filter(e -> StringUtils.startsWithIgnoreCase(e, arguments[0]))
-						.filter(e -> !e.equals(sender.getName()))
-						.collect(Collectors.toList()));
+			completions.addAll(plugin.getUtils().getPlayerNames(sender, arguments[arguments.length-1], (arguments.length == 2 && !arguments[0].equals(sender.getName()))));
 		}
 		
-		return suggestions;
+		return completions;
 	}
 	
 	// LOCATION PARSING #######################################################
