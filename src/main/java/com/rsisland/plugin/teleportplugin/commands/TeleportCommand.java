@@ -90,6 +90,7 @@ public class TeleportCommand extends GroupSubcommand
 		{
 			if(!sender.hasPermission(PERM_TP_POS))
 			{
+				//TODO: Check if first arg is a playername. 
 				throw new NoPermissionException(path + " <x> <y> <z>");
 			}
 			
@@ -111,19 +112,23 @@ public class TeleportCommand extends GroupSubcommand
 			Player player = plugin.getUtils().getPlayer(sender, arguments[0]);
 			Player target = plugin.getUtils().getPlayer(sender, arguments[1]);
 			
+			boolean canTpOthers = sender.hasPermission(PERM_TP_OTHER);
+			
 			if(player == sender)
 			{
-				if(!sender.hasPermission(PERM_TP))
+				if(!(sender.hasPermission(PERM_TP) || canTpOthers))
 				{
 					throw new NoPermissionException(path + " " + arguments[0] + " <player>");
 				}
-				
-				tp(player, target, arguments[1]);
-				return;
+				else
+				{
+					tp(player, target, arguments[1]);
+					return;
+				}
 			}
 			
 			//Check permissions now, since a sender is not tp'ing himself now.
-			if(!sender.hasPermission(PERM_TP_OTHER))
+			if(!canTpOthers)
 			{
 				throw new NoPermissionException(path + " <player> <player>");
 			}
@@ -146,9 +151,18 @@ public class TeleportCommand extends GroupSubcommand
 			//Ignore policies completely, we are in a bypass code.
 			if(player.teleport(target, TeleportCause.COMMAND))
 			{
-				f.n(target, "%v got teleported to you.", player.getName());
+				//TODO by?
 				f.n(player, "You got teleported to %v", target.getName());
-				f.n(sender, "Teleported %v to %v.", player.getName(), target.getName());
+				
+				if(sender != target)
+				{
+					f.n(target, "%v got teleported to you.", player.getName());
+					f.n(sender, "Teleported %v to %v.", player.getName(), target.getName());
+				}
+				else
+				{
+					f.n(sender, "Teleported %v to you.", player.getName());
+				}
 			}
 			else
 			{
@@ -239,15 +253,30 @@ public class TeleportCommand extends GroupSubcommand
 		//Only add player completions when its the first or second argument for:
 		//tp <player>
 		//tp <player> <player>
-		if(
-			(arguments.length == 1 && (sender.hasPermission(PERM_TP_OTHER_POS)
-									  || sender.hasPermission(PERM_TP_OTHER) 
-									  || ((sender instanceof Player)
-										 && (sender.hasPermission(PERM_TP)
-										    || sender.hasPermission(PERM_TP_POS)))))
-		 || (arguments.length == 2 && sender.hasPermission(PERM_TP_OTHER)))
+		
+		int count = arguments.length;
+		
+		if(count == 1 || count == 2)
 		{
-			completions.addAll(plugin.getUtils().getPlayerNames(sender, arguments[arguments.length-1], (arguments.length == 2 && !arguments[0].equals(sender.getName()))));
+			boolean normalTP = sender.hasPermission(PERM_TP);
+			boolean otherTP = sender.hasPermission(PERM_TP_OTHER);
+			
+			if(
+				count == 1 ? (sender.hasPermission(PERM_TP_OTHER_POS)
+							  || otherTP ||
+							  ((sender instanceof Player)
+							   && (normalTP
+								   || sender.hasPermission(PERM_TP_POS))))
+						   : otherTP)
+			{
+				//Wrap, since Collectors.toList() doens't provide addAll().
+				completions = new ArrayList<String>(completions);
+				completions.addAll(
+					new ArrayList<String>(
+						plugin.getUtils().getPlayerNames(
+							sender, arguments[count-1],
+							(count == 1 ? (!normalTP && otherTP ? null : sender.getName()) : arguments[0]))));
+			}
 		}
 		
 		return completions;
@@ -258,8 +287,8 @@ public class TeleportCommand extends GroupSubcommand
 	private Location parseLocation(Location originLocation, String sx, String sy, String sz)
 	{
 		boolean sx_rel = sx.charAt(0) == '~';
-		boolean sy_rel = sx.charAt(0) == '~';
-		boolean sz_rel = sx.charAt(0) == '~';
+		boolean sy_rel = sy.charAt(0) == '~';
+		boolean sz_rel = sz.charAt(0) == '~';
 		
 		double dx = 0;
 		double dy = 0;
@@ -284,7 +313,7 @@ public class TeleportCommand extends GroupSubcommand
 		
 		try
 		{
-			dx = parseD(sx);
+			dx = sx.isEmpty() ? 0 : parseD(sx);
 			if(sx_rel)
 			{
 				dx += originLocation.getX();
@@ -297,7 +326,7 @@ public class TeleportCommand extends GroupSubcommand
 		
 		try
 		{
-			dy = parseD(sy);
+			dy = sy.isEmpty() ? 0 : parseD(sy);
 			if(sy_rel)
 			{
 				dy += originLocation.getY();
@@ -310,7 +339,7 @@ public class TeleportCommand extends GroupSubcommand
 		
 		try
 		{
-			dz = parseD(sz);
+			dz = sz.isEmpty() ? 0 : parseD(sz);
 			if(sz_rel)
 			{
 				dz += originLocation.getZ();
@@ -376,20 +405,18 @@ public class TeleportCommand extends GroupSubcommand
 	public String getPermissions()
 	{
 		String permissions = super.getPermissions();
-		String fill = permissions.isEmpty() ? "" : ".";
+		String fill = permissions.isEmpty() ? "" : ";";
 		
-		return permissions  + fill + String.join(";", permissions);
+		return permissions  + fill + String.join(";", this.permissions);
 	}
 	
 	@Override
 	protected void init(Feedback f, String path, String permission)
 	{
-		String fill = permission.isEmpty() ? "" : ".";  
-		
-		PERM_TP = permission + fill + PERM_TP;
-		PERM_TP_POS = permission + fill + PERM_TP_POS;
-		PERM_TP_OTHER = permission + fill + PERM_TP_OTHER;
-		PERM_TP_OTHER_POS = permission + fill + PERM_TP_OTHER_POS;
+		PERM_TP = permission + name + "." + PERM_TP;
+		PERM_TP_POS = permission + name + "." + PERM_TP_POS;
+		PERM_TP_OTHER = permission + name + "." + PERM_TP_OTHER;
+		PERM_TP_OTHER_POS = permission + name + "." + PERM_TP_OTHER_POS;
 		
 		permissions = new String[] { PERM_TP, PERM_TP_POS, PERM_TP_OTHER, PERM_TP_OTHER_POS };
 		

@@ -22,20 +22,14 @@ public class Utils
 		//TODO: Levenstein? Well not yet.
 		List<Player> playersStartingWithInput = getPlayers(completer, input);
 		
-		if(playersStartingWithInput.isEmpty())
-		{
-			return null;
-		}
-		else
-		{
-			return playersStartingWithInput.get(0);
-		}
+		return playersStartingWithInput.isEmpty() ? null : playersStartingWithInput.get(0);
 	}
 	
-	public List<String> getPlayerNames(CommandSender completer, String input, boolean self)
+	public List<String> getPlayerNames(CommandSender completer, String input, String filterName)
 	{
+		String lowercase = input.toLowerCase();
 		return plugin.getServer().getOnlinePlayers().stream()
-				 .filter(player -> self || player != completer)
+				 .filter(player -> !player.getName().equals(filterName))
 				 .filter(player -> {
 					 for(PlayerFilter filter : plugin.getPlayerFilters())
 					 {
@@ -46,15 +40,15 @@ public class Utils
 					 }
 					 return true;
 				 })
-				 .filter(player -> player.getName().equalsIgnoreCase(input))
+				 .filter(player -> player.getName().toLowerCase().startsWith(lowercase))
 				 .map(Player::getName)
 				 .collect(Collectors.toList());
 	}
 	
 	public List<Player> getPlayers(CommandSender completer, String input)
 	{
+		String lowercase = input.toLowerCase();
 		return plugin.getServer().getOnlinePlayers().stream()
-					 .filter(player -> player != completer)
 					 .filter(player -> {
 						 for(PlayerFilter filter : plugin.getPlayerFilters())
 						 {
@@ -65,7 +59,7 @@ public class Utils
 						 }
 						 return true;
 					 })
-					 .filter(player -> player.getName().equalsIgnoreCase(input))
+					 .filter(player -> player.getName().toLowerCase().startsWith(lowercase))
 					 .collect(Collectors.toList());
 	}
 }
