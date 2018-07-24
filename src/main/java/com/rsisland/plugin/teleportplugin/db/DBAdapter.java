@@ -7,7 +7,7 @@ import java.sql.Statement;
 import java.util.UUID;
 
 import com.rsisland.plugin.teleportplugin.FormattedLogger;
-import com.rsisland.plugin.teleportplugin.Policy;
+import com.rsisland.plugin.teleportplugin.data.Policy;
 
 public class DBAdapter extends GenericDBAdapter
 {

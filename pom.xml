@@ -27,7 +27,7 @@
 		<dependency>
 			<groupId>com.ecconia.rsisland.framework.cofami</groupId>
 			<artifactId>Cofami</artifactId>
-			<version>1.4</version>
+			<version>1.5</version>
 		</dependency>
 		<dependency>
 			<groupId>com.ecconia.rsisland.framework.commonelements</groupId>

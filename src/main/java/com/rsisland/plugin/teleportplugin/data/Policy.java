@@ -1,4 +1,4 @@
-package com.rsisland.plugin.teleportplugin;
+package com.rsisland.plugin.teleportplugin.data;
 
 import java.util.HashMap;
 import java.util.Map;

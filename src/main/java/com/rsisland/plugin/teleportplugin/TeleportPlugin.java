@@ -18,10 +18,13 @@ import com.ecconia.rsisland.framework.cofami.CommandHandler;
 import com.ecconia.rsisland.framework.cofami.Feedback;
 import com.ecconia.rsisland.framework.commonelements.Cuboid;
 import com.rsisland.plugin.teleportplugin.api.PlayerFilter;
+import com.rsisland.plugin.teleportplugin.commands.AcceptCommand;
 import com.rsisland.plugin.teleportplugin.commands.PolicyCommand;
 import com.rsisland.plugin.teleportplugin.commands.TeleportCommand;
+import com.rsisland.plugin.teleportplugin.data.TPPlayer;
 import com.rsisland.plugin.teleportplugin.db.DBAdapter;
 
+//TODO: API: Add method to check each tp
 public class TeleportPlugin extends JavaPlugin implements Listener
 {
 	private Map<Player, TPPlayer> tpPlayers;
@@ -58,11 +61,14 @@ public class TeleportPlugin extends JavaPlugin implements Listener
 		
 		getServer().getPluginManager().registerEvents(this, this);
 		
-		new CommandHandler(this, f
-			,new TeleportCommand(this
-				,new PolicyCommand(this)
-			)
-		);
+		//TODO: Command to request a player to tp someone to you...
+		//Basically the request part of that...
+		CommandHandler.register(this, f
+				,new AcceptCommand(this)
+				,new TeleportCommand(this
+					,new PolicyCommand(this)
+				)
+				);
 		
 		utils = new Utils(this);
 	}
@@ -76,6 +82,12 @@ public class TeleportPlugin extends JavaPlugin implements Listener
 	public void onPlayerLeave(PlayerQuitEvent event)
 	{
 		tpPlayers.remove(event.getPlayer());
+		
+		//TODO: Remove a bit more elegant:
+		for(TPPlayer player : tpPlayers.values())
+		{
+			player.playerLeft(event.getPlayer());
+		}
 	}
 	
 	public TPPlayer getTPPlayer(Player player)

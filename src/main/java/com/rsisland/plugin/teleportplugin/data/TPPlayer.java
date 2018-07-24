@@ -1,13 +1,19 @@
-package com.rsisland.plugin.teleportplugin;
+package com.rsisland.plugin.teleportplugin.data;
 
 import java.util.UUID;
 
+import org.bukkit.entity.Player;
+
+import com.rsisland.plugin.teleportplugin.TeleportPlugin;
+
 public class TPPlayer
 {
-	private Policy tpReceivePolicy;
-	
+	//TODO: PerPlayer policy
 	private final TeleportPlugin plugin;
 	private final UUID uuid;
+	
+	private Policy tpReceivePolicy;
+	private RequestManager requestManager = new RequestManager();
 	
 	public TPPlayer(TeleportPlugin plugin, UUID uuid)
 	{
@@ -19,7 +25,7 @@ public class TPPlayer
 			tpReceivePolicy = plugin.getDBA().loadPolicy(uuid);
 		}
 	}
-
+	
 	public void setTpReceivePolicy(Policy tpReceivePolicy)
 	{
 		this.tpReceivePolicy = tpReceivePolicy;
@@ -31,11 +37,16 @@ public class TPPlayer
 	
 	public Policy getTpReceivePolicy()
 	{
-		if(tpReceivePolicy == null)
-		{
-			//TODO: Impl Request
-			return Policy.ACCEPT;
-		}
 		return tpReceivePolicy;
+	}
+	
+	public void playerLeft(Player player)
+	{
+		requestManager.playerLeft(player);
+	}
+	
+	public RequestManager getRequestManager()
+	{
+		return requestManager;
 	}
 }

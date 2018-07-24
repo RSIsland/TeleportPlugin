@@ -12,8 +12,9 @@ import com.ecconia.rsisland.framework.cofami.Feedback;
 import com.ecconia.rsisland.framework.cofami.GroupSubcommand;
 import com.ecconia.rsisland.framework.cofami.Subcommand;
 import com.ecconia.rsisland.framework.cofami.exceptions.NoPermissionException;
-import com.rsisland.plugin.teleportplugin.Policy;
 import com.rsisland.plugin.teleportplugin.TeleportPlugin;
+import com.rsisland.plugin.teleportplugin.data.Policy;
+import com.rsisland.plugin.teleportplugin.data.TPPlayer;
 
 public class TeleportCommand extends GroupSubcommand
 {
@@ -64,8 +65,7 @@ public class TeleportCommand extends GroupSubcommand
 			//TODO: Proper feedback?
 			Player player = getPlayer(sender);
 			String playerName = arguments[0];
-			
-			Player target = plugin.getUtils().getPlayer(player, playerName);
+			Player target = plugin.getUtils().getPlayer(sender, playerName);
 			
 			tp(player, target, playerName);
 		}
@@ -149,9 +149,25 @@ public class TeleportCommand extends GroupSubcommand
 			die("Try somebody else besides yourself.");
 		}
 		
-		Policy policy = plugin.getTPPlayer(target).getTpReceivePolicy();
+		TPPlayer tpPlayer = plugin.getTPPlayer(target);
+		Policy policy = tpPlayer.getTpReceivePolicy();
 		
-		if(policy == Policy.DENY)
+		if(policy == null)
+		{
+			//Default policy
+			//TODO: Replace permission with rank/level system
+			policy = player.hasPermission("tp.direct") ? Policy.ACCEPT : Policy.REQUEST;
+		}
+		
+		if(policy == Policy.REQUEST)
+		{
+			//Save request
+			tpPlayer.getRequestManager().createRequest(player);
+			//TODO: JSON-Text plugin/framework
+			f.n(target, "Player %v requests to teleport to you. Accept: %v", player.getName(), "/tpa " + player.getName());
+			f.n(player, "Teleport request to %v has been sent.", target.getName());
+		}
+		else if(policy == Policy.DENY)
 		{
 			f.n(target, "Player %v attempted to tp to you.", player.getName());
 			die("Player %v does not allow teleportations.", target.getName());

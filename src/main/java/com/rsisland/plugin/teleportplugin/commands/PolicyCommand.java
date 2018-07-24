@@ -10,8 +10,8 @@ import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
 
 import com.ecconia.rsisland.framework.cofami.Subcommand;
-import com.rsisland.plugin.teleportplugin.Policy;
 import com.rsisland.plugin.teleportplugin.TeleportPlugin;
+import com.rsisland.plugin.teleportplugin.data.Policy;
 
 public class PolicyCommand extends Subcommand
 {
@@ -29,12 +29,14 @@ public class PolicyCommand extends Subcommand
 	public void exec(CommandSender sender, String[] arguments)
 	{
 		Player player = getPlayer(sender);
+		checkPermission(sender);
 		
 		if(arguments.length != 1)
 		{
 			f.e(sender, "Usage: ", path+" <policy>");
-			f.n(sender, "%v (%v) - Default policy of this server.", "Reset", "Accept");
+			f.n(sender, "%v - Default policy of this server.", "Reset");
 			f.n(sender, "%v - Allow anyone to tp to you.", "Accept");
+			f.n(sender, "%v - Player may only tp to you sending a request.", "Request");			
 			f.n(sender, "%v - Deny anyone to tp to you.", "Deny");
 			return;
 		}
@@ -64,15 +66,9 @@ public class PolicyCommand extends Subcommand
 	{
 		if(args.length == 1)
 		{
-			return Arrays.stream(new String[] {"accept", "deny", "reset"}).filter(e -> StringUtils.startsWithIgnoreCase(e, args[0])).collect(Collectors.toList());
+			return Arrays.stream(new String[] {"accept", "request", "deny", "reset"}).filter(e -> StringUtils.startsWithIgnoreCase(e, args[0])).collect(Collectors.toList());
 		}
 		
 		return Collections.emptyList();
-	}
-	
-	@Override
-	protected boolean hasCallRequirements()
-	{
-		return true;
 	}
 }
