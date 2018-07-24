@@ -20,6 +20,7 @@ import com.ecconia.rsisland.framework.commonelements.Cuboid;
 import com.rsisland.plugin.teleportplugin.api.PlayerFilter;
 import com.rsisland.plugin.teleportplugin.commands.AcceptCommand;
 import com.rsisland.plugin.teleportplugin.commands.PolicyCommand;
+import com.rsisland.plugin.teleportplugin.commands.PositionTeleportCommand;
 import com.rsisland.plugin.teleportplugin.commands.TeleportCommand;
 import com.rsisland.plugin.teleportplugin.data.TPPlayer;
 import com.rsisland.plugin.teleportplugin.db.DBAdapter;
@@ -65,6 +66,7 @@ public class TeleportPlugin extends JavaPlugin implements Listener
 		//Basically the request part of that...
 		CommandHandler.register(this, f
 				,new AcceptCommand(this)
+				,new PositionTeleportCommand(this)
 				,new TeleportCommand(this
 					,new PolicyCommand(this)
 				)
