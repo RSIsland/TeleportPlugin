@@ -22,7 +22,42 @@ public class Utils
 		//TODO: Levenstein? Well not yet.
 		List<Player> playersStartingWithInput = getPlayers(completer, input);
 		
-		return playersStartingWithInput.isEmpty() ? null : playersStartingWithInput.get(0);
+		if(playersStartingWithInput.isEmpty())
+		{
+			return null;
+		}
+		else
+		{
+			//Check if there is exactly this player in the list
+			for(Player p : playersStartingWithInput)
+			{
+				if(p.getName().toLowerCase().equals(input))
+				{
+					return p;
+				}
+			}
+			
+			//Else take just any...
+			return playersStartingWithInput.get(0);
+		}
+	}
+	
+	public List<Player> getPlayers(CommandSender completer, String input)
+	{
+		String lowercase = input.toLowerCase();
+		return plugin.getServer().getOnlinePlayers().stream()
+					 .filter(player -> {
+						 for(PlayerFilter filter : plugin.getPlayerFilters())
+						 {
+							 if(filter.test(completer, player))
+							 {
+								 return false;
+							 }
+						 }
+						 return true;
+					 })
+					 .filter(player -> player.getName().toLowerCase().startsWith(lowercase))
+					 .collect(Collectors.toList());
 	}
 	
 	public List<String> getPlayerNames(CommandSender completer, String input, String filterName)
@@ -43,23 +78,5 @@ public class Utils
 				 .filter(player -> player.getName().toLowerCase().startsWith(lowercase))
 				 .map(Player::getName)
 				 .collect(Collectors.toList());
-	}
-	
-	public List<Player> getPlayers(CommandSender completer, String input)
-	{
-		String lowercase = input.toLowerCase();
-		return plugin.getServer().getOnlinePlayers().stream()
-					 .filter(player -> {
-						 for(PlayerFilter filter : plugin.getPlayerFilters())
-						 {
-							 if(filter.test(completer, player))
-							 {
-								 return false;
-							 }
-						 }
-						 return true;
-					 })
-					 .filter(player -> player.getName().toLowerCase().startsWith(lowercase))
-					 .collect(Collectors.toList());
 	}
 }
