@@ -164,8 +164,12 @@ public class TeleportCommand extends GroupSubcommand
 			//Save request
 			tpPlayer.getRequestManager().createRequest(player);
 			//TODO: JSON-Text plugin/framework
-			f.n(target, "Player %v requests to teleport to you. Accept: %v", player.getName(), "/tpa " + player.getName());
-			f.n(player, "Teleport request to %v has been sent.", target.getName());
+			f.n(player, "Teleport request has been sent to %v.", target.getName());
+			
+			if(!plugin.getUtils().json(target, "{\"text\":\"\",\"color\":\"gray\",\"extra\":[{\"text\":\"[\",\"color\":\"white\"},{\"text\":\"TP\",\"color\":\"gold\"},{\"text\":\"] \",\"color\":\"white\"},{\"text\":\"Player \"},{\"text\":\"" + player.getName() + "\",\"color\":\"gold\"},{\"text\":\" requests to teleport to you. \"},{\"text\":\"\",\"hoverEvent\":{\"action\":\"show_text\",\"value\":{\"text\":\"/tpa " + player.getName() + "\",\"color\":\"gold\"}},\"clickEvent\":{\"action\":\"run_command\",\"value\":\"/tpa " + player.getName() + "\"},\"extra\":[{\"text\":\"[\",\"color\":\"white\"},{\"text\":\"Accept\",\"color\":\"gold\"},{\"text\":\"]\",\"color\":\"white\"}]}]}"))
+			{
+				f.n(target, "Player %v requests to teleport to you. Accept: %v", player.getName(), "/tpa " + player.getName());
+			}
 		}
 		else if(policy == Policy.DENY)
 		{

@@ -8,13 +8,26 @@ import org.bukkit.entity.Player;
 
 import com.rsisland.plugin.teleportplugin.api.PlayerFilter;
 
+import de.ecconia.bukkit.plugin.jsonsender.JSONPluginAPI;
+
 public class Utils
 {
 	private final TeleportPlugin plugin;
+	private final JSONPluginAPI json;
 	
 	public Utils(TeleportPlugin plugin)
 	{
 		this.plugin = plugin;
+		
+		//Setup JSON code
+		if(plugin.getServer().getPluginManager().isPluginEnabled("JSONPlugin"))
+		{
+			json = (JSONPluginAPI) plugin.getServer().getPluginManager().getPlugin("JSONPlugin");
+		}
+		else
+		{
+			json = null;
+		}
 	}
 	
 	public Player getPlayer(CommandSender completer, String input)
@@ -78,5 +91,17 @@ public class Utils
 				 .filter(player -> player.getName().toLowerCase().startsWith(lowercase))
 				 .map(Player::getName)
 				 .collect(Collectors.toList());
+	}
+	
+	public boolean json(Player player, String jsonMessage)
+	{
+		if(json != null)
+		{
+			return json.json(player, jsonMessage);
+		}
+		else
+		{
+			return false;
+		}
 	}
 }
