@@ -1,9 +1,11 @@
 package com.rsisland.plugin.teleportplugin.commands;
 
 import java.util.ArrayList;
+import java.util.Collection;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
-import org.apache.commons.lang.StringUtils;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
 import org.bukkit.event.player.PlayerTeleportEvent.TeleportCause;
@@ -30,7 +32,7 @@ public class AcceptCommand extends Subcommand
 		Player player = getPlayer(sender);
 		TPPlayer tpPlayer = plugin.getTPPlayer(player);
 		
-		List<Player> toTPPlayers;
+		Set<Player> toTPPlayers;
 		
 		if(arguments.length == 0)
 		{
@@ -38,7 +40,7 @@ public class AcceptCommand extends Subcommand
 			// Maybe add message if a request time'd out.
 			// Alternative make an outter and inner timespan (the outter one for accept all)
 			// If only one possible accept, time doesn't even matter, consider that too...
-			toTPPlayers = tpPlayer.getRequestManager().getAll();
+			toTPPlayers = new HashSet<>(tpPlayer.getRequestManager().getAll());
 			
 			if(toTPPlayers.isEmpty())
 			{
@@ -47,12 +49,13 @@ public class AcceptCommand extends Subcommand
 		}
 		else
 		{
-			toTPPlayers = new ArrayList<>();
-			List<String> whosThat = new ArrayList<>();
-			List<String> didNotRequest = new ArrayList<>();
+			toTPPlayers = new HashSet<>();
+			Set<String> whosThat = new HashSet<>();
+			Set<String> didNotRequest = new HashSet<>();
 			
 			for(String playerName : arguments)
 			{
+				//TODO: Get all starting with and filter then?
 				Player p = plugin.getUtils().getPlayer(sender, playerName);
 				if(p == null)
 				{
@@ -95,7 +98,7 @@ public class AcceptCommand extends Subcommand
 		printList(sender, yepTPed, (yepTPed.size() == 1 ? "has" : "have") + " been teleported to you", true);
 	}
 	
-	private void printList(CommandSender sender, List<String> list, String message, boolean good)
+	private void printList(CommandSender sender, Collection<String> list, String message, boolean good)
 	{
 		if(!list.isEmpty())
 		{
@@ -106,7 +109,19 @@ public class AcceptCommand extends Subcommand
 			}
 			else
 			{
-				messageFormat = "Players " + StringUtils.repeat("%v", ", ", list.size()) + " " + message + ".";
+				String args = "%v";
+				
+				for(int i = 0; i < list.size()-2; i++)
+				{
+					args += ", %v";
+				}
+
+				if(list.size() > 1)
+				{
+					args += " and %v";
+				}
+				
+				messageFormat = "Players" + args + " " + message + ".";
 			}
 			
 			if(good)
